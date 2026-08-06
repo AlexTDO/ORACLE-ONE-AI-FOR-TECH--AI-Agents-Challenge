@@ -1,11 +1,11 @@
 """
-Agente RAG com LangGraph - Versão Corrigida
+Agente RAG com LangGraph - Com Streaming e Acompanhamento
 """
 
 import sys
 import time
 from pathlib import Path
-from typing import TypedDict, List, Dict, Any, Optional
+from typing import TypedDict, List, Dict, Any, Optional, Iterator
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -34,6 +34,7 @@ class RAGState(TypedDict):
     tokens_usados: int
     passos: List[str]
     erros: List[str]
+    stream: List[Dict[str, Any]]  # Para streaming
 
 
 # ============================================
@@ -41,7 +42,7 @@ class RAGState(TypedDict):
 # ============================================
 
 class RAGGraph:
-    """Grafo RAG completo com LangGraph"""
+    """Grafo RAG completo com LangGraph e Streaming"""
     
     def __init__(
         self,
@@ -66,7 +67,7 @@ class RAGGraph:
         # Constrói o grafo com MemorySaver
         self.app = self._build_graph().compile(checkpointer=MemorySaver())
         
-        print("✅ Agente RAG com LangGraph inicializado!")
+        print("✅ Agente RAG com LangGraph e Streaming inicializado!")
     
     def _build_graph(self) -> StateGraph:
         """Constrói o grafo RAG"""
@@ -97,12 +98,30 @@ class RAGGraph:
             embedding = self.embedder.embed_text(state["pergunta"])
             state["embedding"] = embedding.tolist()
             state["passos"] = state.get("passos", []) + ["embed"]
+            
+            # Adiciona ao stream
+            state["stream"] = state.get("stream", []) + [{
+                "step": "embed",
+                "status": "completed",
+                "message": f"✅ Embedding gerado (dimensão: {len(embedding)})"
+            }]
+            
             print(f"✅ Embedding gerado (dimensão: {len(embedding)})")
         except Exception as e:
             print(f"❌ Erro no embedding: {e}")
             state["erros"] = state.get("erros", []) + [f"embed: {e}"]
+            state["stream"] = state.get("stream", []) + [{
+                "step": "embed",
+                "status": "error",
+                "message": f"❌ Erro: {e}"
+            }]
         
-        return {"embedding": state["embedding"], "passos": state["passos"], "erros": state["erros"]}
+        return {
+            "embedding": state["embedding"],
+            "passos": state["passos"],
+            "erros": state["erros"],
+            "stream": state["stream"]
+        }
     
     def _node_search(self, state: RAGState) -> dict:
         """Nó 2: Busca documentos similares"""
@@ -116,12 +135,29 @@ class RAGGraph:
             )
             state["documentos_busca"] = results
             state["passos"] = state.get("passos", []) + ["search"]
+            
+            state["stream"] = state.get("stream", []) + [{
+                "step": "search",
+                "status": "completed",
+                "message": f"✅ Encontrados {len(results)} documentos"
+            }]
+            
             print(f"✅ Encontrados {len(results)} documentos")
         except Exception as e:
             print(f"❌ Erro na busca: {e}")
             state["erros"] = state.get("erros", []) + [f"search: {e}"]
+            state["stream"] = state.get("stream", []) + [{
+                "step": "search",
+                "status": "error",
+                "message": f"❌ Erro: {e}"
+            }]
         
-        return {"documentos_busca": state["documentos_busca"], "passos": state["passos"], "erros": state["erros"]}
+        return {
+            "documentos_busca": state["documentos_busca"],
+            "passos": state["passos"],
+            "erros": state["erros"],
+            "stream": state["stream"]
+        }
     
     def _node_rerank(self, state: RAGState) -> dict:
         """Nó 3: Reranking dos documentos"""
@@ -139,13 +175,30 @@ class RAGGraph:
                 state["documentos_rerank"] = []
             
             state["passos"] = state.get("passos", []) + ["rerank"]
+            
+            state["stream"] = state.get("stream", []) + [{
+                "step": "rerank",
+                "status": "completed",
+                "message": f"✅ Reranking concluído ({len(state['documentos_rerank'])} documentos)"
+            }]
+            
             print(f"✅ Reranking concluído ({len(state['documentos_rerank'])} documentos)")
         except Exception as e:
             print(f"❌ Erro no reranking: {e}")
             state["erros"] = state.get("erros", []) + [f"rerank: {e}"]
             state["documentos_rerank"] = state.get("documentos_busca", [])[:self.top_k]
+            state["stream"] = state.get("stream", []) + [{
+                "step": "rerank",
+                "status": "error",
+                "message": f"❌ Erro: {e}"
+            }]
         
-        return {"documentos_rerank": state["documentos_rerank"], "passos": state["passos"], "erros": state["erros"]}
+        return {
+            "documentos_rerank": state["documentos_rerank"],
+            "passos": state["passos"],
+            "erros": state["erros"],
+            "stream": state["stream"]
+        }
     
     def _node_generate(self, state: RAGState) -> dict:
         """Nó 4: Gera a resposta final"""
@@ -168,20 +221,40 @@ class RAGGraph:
             state["tokens_usados"] = response.get("tokens_used", 0)
             state["passos"] = state.get("passos", []) + ["generate"]
             
+            state["stream"] = state.get("stream", []) + [{
+                "step": "generate",
+                "status": "completed",
+                "message": f"✅ Resposta gerada ({state['tokens_usados']} tokens)"
+            }]
+            
             print(f"✅ Resposta gerada ({state['tokens_usados']} tokens)")
         except Exception as e:
             print(f"❌ Erro na geração: {e}")
             state["erros"] = state.get("erros", []) + [f"generate: {e}"]
             state["resposta"] = f"Erro ao gerar resposta: {e}"
+            state["stream"] = state.get("stream", []) + [{
+                "step": "generate",
+                "status": "error",
+                "message": f"❌ Erro: {e}"
+            }]
         
-        return {"resposta": state["resposta"], "tokens_usados": state["tokens_usados"], "passos": state["passos"], "erros": state["erros"]}
+        return {
+            "resposta": state["resposta"],
+            "tokens_usados": state["tokens_usados"],
+            "passos": state["passos"],
+            "erros": state["erros"],
+            "stream": state["stream"]
+        }
     
     # ==========================================
-    # MÉTODO DE EXECUÇÃO
+    # MÉTODOS DE EXECUÇÃO
     # ==========================================
     
     def ask(self, pergunta: str, filtros: Optional[Dict] = None) -> Dict[str, Any]:
-        """Executa o agente RAG completo"""
+        """
+        Executa o agente RAG completo (sem streaming)
+        Retorna o resultado completo de uma vez
+        """
         print(f"\n🤖 PERGUNTA: {pergunta}")
         
         # Estado inicial
@@ -194,17 +267,16 @@ class RAGGraph:
             "resposta": None,
             "tokens_usados": 0,
             "passos": [],
-            "erros": []
+            "erros": [],
+            "stream": []
         }
         
         try:
             start = time.time()
-            
-            # 🔧 CORREÇÃO: Adiciona config com thread_id
             config = {"configurable": {"thread_id": "rag_session"}}
             result = self.app.invoke(initial_state, config=config)
-            
             elapsed = time.time() - start
+            result["tempo_total"] = elapsed
             
             # Formata fontes
             sources = []
@@ -240,4 +312,73 @@ class RAGGraph:
                 "tokens_usados": 0,
                 "tempo_total": 0,
                 "erros": [str(e)]
+            }
+    
+    def ask_stream(self, pergunta: str, filtros: Optional[Dict] = None) -> Iterator[Dict[str, Any]]:
+        """
+        Executa o agente com streaming
+        Yield a cada passo para acompanhamento em tempo real
+        """
+        print(f"\n🤖 PERGUNTA: {pergunta}")
+        
+        # Estado inicial
+        initial_state = {
+            "pergunta": pergunta,
+            "filtros": filtros,
+            "embedding": None,
+            "documentos_busca": None,
+            "documentos_rerank": None,
+            "resposta": None,
+            "tokens_usados": 0,
+            "passos": [],
+            "erros": [],
+            "stream": []
+        }
+        
+        try:
+            start = time.time()
+            config = {"configurable": {"thread_id": "rag_session"}}
+            
+            # Stream dos eventos
+            for event in self.app.stream(initial_state, config=config):
+                for node_name, node_data in event.items():
+                    if node_name in ["embed", "search", "rerank", "generate"]:
+                        yield {
+                            "step": node_name,
+                            "status": "processing",
+                            "data": node_data,
+                            "stream": node_data.get("stream", [])
+                        }
+            
+            # Estado final
+            final_state = self.app.get_state(config)
+            if final_state and final_state.values:
+                elapsed = time.time() - start
+                final_state.values["tempo_total"] = elapsed
+                
+                # Formata fontes para o resultado final
+                sources = []
+                for doc in final_state.values.get("documentos_rerank", []):
+                    sources.append({
+                        "filename": doc['metadata'].get('filename', 'Documento'),
+                        "category": doc['metadata'].get('category', 'Geral'),
+                        "score": doc.get('score', 0),
+                        "preview": doc['content'][:200] + "..."
+                    })
+                
+                yield {
+                    "step": "complete",
+                    "status": "completed",
+                    "data": final_state.values,
+                    "sources": sources,
+                    "stream": final_state.values.get("stream", [])
+                }
+            
+        except Exception as e:
+            print(f"❌ Erro no agente: {e}")
+            yield {
+                "step": "error",
+                "status": "error",
+                "data": {"erros": [str(e)]},
+                "stream": [{"step": "error", "status": "error", "message": str(e)}]
             }
