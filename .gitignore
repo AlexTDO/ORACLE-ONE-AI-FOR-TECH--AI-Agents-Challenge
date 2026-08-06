@@ -36,13 +36,6 @@ data/processed/embeddings_cache/
 *.onnx
 
 # ============================================
-# TESTES ESPECÍFICOS (NÃO SUBIR) 🧪
-# ============================================
-tests/test_reranker.py
-tests/test_reranker/
-tests/__pycache__/
-
-# ============================================
 # CACHE DO PYTHON
 # ============================================
 __pycache__/
