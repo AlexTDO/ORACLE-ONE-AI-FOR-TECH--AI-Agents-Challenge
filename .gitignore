@@ -1,0 +1,111 @@
+# ============================================
+# AMBIENTE VIRTUAL
+# ============================================
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================
+# ARQUIVOS DE AMBIENTE (CHAVES) 🔑
+# ============================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# ============================================
+# DADOS DO SISTEMA
+# ============================================
+data/chroma_db/
+data/processed/
+data/raw/
+*.db
+*.sqlite3
+*.sqlite
+
+# ============================================
+# CACHE DE EMBEDDINGS
+# ============================================
+data/processed/embeddings_cache/
+*.cache
+*.h5
+*.pb
+*.onnx
+
+# ============================================
+# TESTES ESPECÍFICOS (NÃO SUBIR) 🧪
+# ============================================
+tests/test_reranker.py
+tests/test_reranker/
+tests/__pycache__/
+
+# ============================================
+# CACHE DO PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================
+# LOGS
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================
+# IDE E EDITORES
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.iml
+
+# ============================================
+# MODELOS DO OLLAMA
+# ============================================
+models/
+ollama_models/
+~/.ollama/
+
+# ============================================
+# STREAMLIT
+# ============================================
+.streamlit/
+*.streamlit
+
+# ============================================
+# ARQUIVOS TEMPORÁRIOS
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+
+# ============================================
+# RELATÓRIOS E ARQUIVOS GRANDES
+# ============================================
+*.html
+*.xml
+*.json
+!requirements.json
