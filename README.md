@@ -1,6 +1,10 @@
 # 🤖 Agente RAG Corporativo - TechFlow Solutions
+📹 **[Assista à demonstração do agente em ação](https://github.com/AlexTDO/ORACLE-ONE-AI-FOR-TECH--AI-Agents-Challenge/assets/https://github.com/user-attachments/assets/de0a8be5-f020-4775-a114-8c8d17484e58)**
 
-Uploading RAG TechFlow em Produção.mp4…
+[![Assista ao vídeo](https://img.shields.io/badge/▶️-Assista_ao_Vídeo-FF0000?style=for-the-badge)](https://github.com/AlexTDO/ORACLE-ONE-AI-FOR-TECH--AI-Agents-Challenge/assets/https://github.com/user-attachments/assets/de0a8be5-f020-4775-a114-8c8d17484e58)
+
+
+
 
 🚀 Teste Agora Mesmo!
 https://oracle-one-ai-for-tech--ai-agents-challenge-x4apig4k5nr3fivzzg.streamlit.app/
