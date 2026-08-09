@@ -73,9 +73,6 @@ Criar um assistente virtual inteligente que:
 │                    └──────────────────────────┘                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Componentes Principais
-
 ## 🛠️ Tecnologias e Ferramentas
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -90,20 +87,22 @@ Criar um assistente virtual inteligente que:
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
----
+### Componentes Principais
 
-📋 Componentes Principais (Tabela Visual)
-Componente	Tecnologia	Função
-🐍 Linguagem	Python 3.10+	Base do sistema
-🖥️ Framework Web	Streamlit	Interface interativa
-🔗 Orquestração	LangChain	Pipeline RAG
-🦙 LLM Local	Ollama + gemma3:1b	Geração de respostas (4GB RAM)
-🌐 LLM API	OpenRouter	Modelos gratuitos de alta qualidade
-📊 Embeddings	Sentence Transformers (all-MiniLM-L6-v2)	Vetorização de textos
-🗄️ Banco Vetorial	ChromaDB	Armazenamento e busca
-🔍 Busca Híbrida	BM25 + Embeddings	Melhor recuperação
-🎯 Reranking	Cross-Encoder (ms-marco-MiniLM-L-6-v2)	Refinamento de resultados
-📄 Processamento	pdfplumber	Extração robusta de PDFs
+| Componente | Tecnologia | Função |
+|------------|------------|--------|
+| **Linguagem** | Python 3.10+ | Base do sistema |
+| **Framework Web** | Streamlit | Interface interativa |
+| **Orquestração** | LangChain | Pipeline RAG |
+| **LLM Local** | Ollama + gemma3:1b | Geração de respostas (4GB RAM) |
+| **LLM API** | OpenRouter | Modelos gratuitos de alta qualidade |
+| **Embeddings** | Sentence Transformers (all-MiniLM-L6-v2) | Vetorização de textos |
+| **Banco Vetorial** | ChromaDB | Armazenamento e busca |
+| **Busca Híbrida** | BM25 + Embeddings | Melhor recuperação |
+| **Reranking** | Cross-Encoder (ms-marco-MiniLM-L-6-v2) | Refinamento de resultados |
+| **Processamento** | pdfplumber | Extração robusta de PDFs |
+
+---
 
 ## 📁 Estrutura do Projeto
 
