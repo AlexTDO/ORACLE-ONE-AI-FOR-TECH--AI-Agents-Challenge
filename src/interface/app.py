@@ -18,24 +18,6 @@ from src.retrieval.vector_store import VectorStore
 from src.retrieval.reranker import Reranker
 from src.generation.llm import LLMFactory, RAGAgent
 
-# ==================== PRÉ-CARGA DO MODELO DE EMBEDDING ====================
-# Esse bloco roda antes de qualquer coisa para baixar o modelo pesado na nuvem
-# sem ser interrompido pelo timeout de execução do Streamlit.
-import time
-from sentence_transformers import SentenceTransformer
-
-try:
-    with st.spinner("🔄 Baixando modelo de embedding (pode demorar 2 minutos)..."):
-        # O Streamlit Cloud faz cache automático da pasta '~/.cache/huggingface'
-        # Então esse download só vai acontecer na PRIMEIRA execução.
-        _ = SentenceTransformer('all-MiniLM-L6-v2')
-        print("✅ Modelo de embedding carregado com sucesso!")
-except Exception as e:
-    st.error(f"Erro crítico ao baixar o modelo: {e}")
-    st.stop()
-# =========================================================================
-
-
 # ==================== CONFIGURAÇÃO DA PÁGINA ====================
 st.set_page_config(
     page_title="TechFlow Solutions - Agente Corporativo IA",
@@ -370,7 +352,16 @@ def init_components(provider, model_name, temperature, top_k):
         from dotenv import load_dotenv
         load_dotenv()
         
+        # ===== DOWNLOAD DO MODELO DE EMBEDDING (SEGURA E CORRETO) =====
+        # Realiza o download do modelo dentro do cache do Streamlit, 
+        # garantindo que ele não seja interrompido por timeout.
+        from sentence_transformers import SentenceTransformer
+        if 'embedding_model' not in st.session_state:
+            with st.spinner("⬇️ Baixando modelo de embeddings (pode levar 2 min)..."):
+                st.session_state.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
         embedder = Embedder()
+        # ==================================================================
+        
         vector_store = VectorStore()
         reranker = Reranker()
         
@@ -476,7 +467,7 @@ if not st.session_state.messages:
         
         Digite sua pergunta abaixo! 👇
         """.format(
-            st.session_state.get('current_model', 'llama-3.3-70b-versatile'),  # Atualizado visualmente para o novo padrão
+            st.session_state.get('current_model', 'llama-3.3-70b-versatile'),
             st.session_state.get('current_provider', 'groq')
         ))
 
