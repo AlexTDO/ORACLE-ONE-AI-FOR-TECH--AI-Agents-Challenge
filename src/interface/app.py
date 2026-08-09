@@ -360,7 +360,9 @@ def init_components(provider, model_name, temperature, top_k):
             with st.spinner("📦 Carregando modelo de embeddings..."):
                 # Carrega o modelo a partir da pasta que enviamos no repositório
                 st.session_state.embedding_model = SentenceTransformer(model_path)
-        embedder = Embedder()
+        
+        # 🔧 CORREÇÃO: Passa o modelo carregado explicitamente para o Embedder
+        embedder = Embedder(model=st.session_state.embedding_model)
         # ==================================================================
         
         vector_store = VectorStore()
