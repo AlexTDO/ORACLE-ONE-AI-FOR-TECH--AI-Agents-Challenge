@@ -19,13 +19,15 @@ class Embedder:
         self,
         model_name: str = "all-MiniLM-L6-v2",
         device: Optional[str] = None,
-        cache_dir: Optional[str] = None
+        cache_dir: Optional[str] = None,
+        model: Optional[SentenceTransformer] = None  # <--- ADICIONADO
     ):
         """
         Args:
             model_name: Nome do modelo Sentence Transformers
             device: 'cpu' ou 'cuda' (auto-detect se None)
             cache_dir: Diretório para cache dos embeddings
+            model: Objeto SentenceTransformer pré-carregado (prioritário)
         """
         self.model_name = model_name
         self.device = device if device else ('cuda' if torch.cuda.is_available() else 'cpu')
@@ -37,8 +39,15 @@ class Embedder:
         print(f"🔧 Inicializando embedder: {model_name}")
         print(f"📱 Dispositivo: {self.device}")
         
-        # Carrega modelo
-        self.model = SentenceTransformer(model_name, device=self.device)
+        # ===== CORREÇÃO: Aceita modelo pré-carregado =====
+        if model is not None:
+            print(f"✅ Usando modelo pré-carregado fornecido externamente.")
+            self.model = model
+        else:
+            # Carrega modelo do zero
+            self.model = SentenceTransformer(model_name, device=self.device)
+        # =================================================
+        
         self.embedding_dim = self.model.get_sentence_embedding_dimension()
         
         print(f"✅ Embedder pronto (dimensão: {self.embedding_dim})")
@@ -128,7 +137,7 @@ class Embedder:
         
         return None
     
-    def _save_to_cache(self, chunks: List[Dict[str, Any]]):
+    def _save_to_cache(self, chunks: List[Dict[str, Any]]) -> None:
         """Salva embeddings no cache"""
         cache_key = self._get_cache_key(chunks)
         cache_path = self.cache_dir / cache_key
