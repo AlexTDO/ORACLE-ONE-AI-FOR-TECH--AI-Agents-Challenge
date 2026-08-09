@@ -15,7 +15,7 @@ from src.ingestion.chunker import DocumentChunker
 class DocumentLoader:
     """Carrega e processa documentos da pasta"""
     
-    def __init__(self, chunk_size: int = 500, chunk_overlap: int = 100):
+    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200):   # Mudar tamanha da janela de caracteres e sopreposição
         self.extractor = DocumentExtractor()
         self.chunker = DocumentChunker(chunk_size, chunk_overlap)
         
@@ -46,8 +46,10 @@ class DocumentLoader:
             try:
                 # Extrai conteúdo
                 extracted = self.extractor.extract(file_path)
+                content = extracted["content"]
                 
-                if not extracted["content"] or len(extracted["content"]) < 10:
+                # Verifica se o conteúdo é válido
+                if not content or len(content) < 10:
                     print(f"⚠️  Arquivo ignorado (pouco conteúdo): {file_path.name}")
                     continue
                 
@@ -62,9 +64,9 @@ class DocumentLoader:
                 
                 # Chunking
                 chunks = self.chunker.chunk_document(
-                    extracted["content"],
+                    content,
                     base_metadata,
-                    strategy="recursive"
+                    strategy="by_section"  # ← MUDAR DE "recursive" PARA "by_section"
                 )
                 
                 all_chunks.extend(chunks)

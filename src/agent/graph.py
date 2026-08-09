@@ -34,7 +34,7 @@ class RAGState(TypedDict):
     tokens_usados: int
     passos: List[str]
     erros: List[str]
-    stream: List[Dict[str, Any]]  # Para streaming
+    stream: List[Dict[str, Any]]
 
 
 # ============================================
@@ -51,7 +51,7 @@ class RAGGraph:
         reranker: Optional[Reranker] = None,
         llm_provider: str = "ollama",
         llm_model: str = "gemma3:1b",
-        top_k: int = 3,
+        top_k: int = 5,
         temperature: float = 0.3
     ):
         self.embedder = embedder or Embedder()
@@ -205,14 +205,29 @@ class RAGGraph:
         print("🔍 [Passo 4] Gerando resposta...")
         
         try:
-            # Monta contexto
+            # 🔥 USA MAIS DOCUMENTOS (todos os do rerank + busca)
+            docs = state.get("documentos_rerank", [])
+            
+            # Se tiver poucos, pega da busca também
+            if len(docs) < self.top_k * 2:
+                busca_docs = state.get("documentos_busca", [])
+                # Adiciona documentos da busca que não estão no rerank
+                existing_ids = {d.get('id') for d in docs}
+                for d in busca_docs:
+                    if d.get('id') not in existing_ids and len(docs) < self.top_k * 3:
+                        docs.append(d)
+                        existing_ids.add(d.get('id'))
+            
+            # Monta contexto com TODOS os chunks disponíveis (até 15)
             context_parts = []
-            for doc in state.get("documentos_rerank", []):
+            for i, doc in enumerate(docs[:self.top_k * 3]):  # Até 15 chunks
                 filename = doc['metadata'].get('filename', 'Documento')
                 content = doc['content']
-                context_parts.append(f"[{filename}]\n{content}")
+                context_parts.append(f"[Documento {i+1}: {filename}]\n{content}")
             
             context = "\n\n".join(context_parts)
+            
+            print(f"📄 Contexto montado com {len(context_parts)} chunks")
             
             # Gera resposta
             response = self.llm.generate_response(state["pergunta"], context)

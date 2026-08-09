@@ -1,12 +1,16 @@
 """
 Interface Universal para LLMs
-Suporte: Ollama, Gemini, OpenAI, Claude
+Suporte: Ollama, Gemini, OpenAI, Claude, OpenRouter, Groq, DeepSeek
 """
 
 import os
 import json
 from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente do .env
+load_dotenv()
 
 # ==================== BASE ====================
 
@@ -112,21 +116,26 @@ class OllamaLLM(BaseLLM):
     def _get_default_prompt(self):
         return """
         Você é um assistente corporativo da TechFlow Solutions.
-        Sua função é responder perguntas de colaboradores baseado APENAS nos documentos fornecidos.
         
-        INSTRUÇÕES IMPORTANTES:
-        1. Use SOMENTE o contexto fornecido para responder
-        2. Se a resposta não estiver no contexto, diga "Não encontrei essa informação nos documentos disponíveis"
-        3. Cite a fonte da informação (nome do arquivo e seção)
-        4. Seja objetivo, claro e profissional
-        5. Não invente informações
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
         
         FORMATO DE RESPOSTA:
         [Resposta direta e clara]
         
-        Fontes consultadas:
-        - [Arquivo 1]
-        - [Arquivo 2]
+        Fonte: [nome do arquivo]
         """
     
     def get_model_name(self) -> str:
@@ -141,7 +150,7 @@ class GeminiLLM(BaseLLM):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-1.5-flash",
+        model_name: str = "gemini-2.5-pro",
         temperature: float = 0.3,
         max_tokens: int = 500
     ):
@@ -172,6 +181,8 @@ class GeminiLLM(BaseLLM):
             
             Pergunta do colaborador:
             {query}
+            
+            RESPOSTA:
             """
             
             response = model.generate_content(
@@ -203,10 +214,26 @@ class GeminiLLM(BaseLLM):
     def _get_default_prompt(self):
         return """
         Você é um assistente corporativo da TechFlow Solutions.
-        Responda perguntas de colaboradores baseado APENAS nos documentos fornecidos.
-        Use SOMENTE o contexto fornecido.
-        Se não souber, diga "Não encontrei essa informação".
-        Cite as fontes.
+        
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
+        
+        FORMATO DE RESPOSTA:
+        [Resposta direta e clara]
+        
+        Fonte: [nome do arquivo]
         """
     
     def get_model_name(self) -> str:
@@ -221,7 +248,7 @@ class OpenAIChat(BaseLLM):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gpt-3.5-turbo",
+        model_name: str = "gpt-4o-mini",
         temperature: float = 0.3,
         max_tokens: int = 500
     ):
@@ -249,6 +276,8 @@ class OpenAIChat(BaseLLM):
             
             Pergunta do colaborador:
             {query}
+            
+            RESPOSTA:
             """
             
             response = client.chat.completions.create(
@@ -281,10 +310,26 @@ class OpenAIChat(BaseLLM):
     def _get_default_prompt(self):
         return """
         Você é um assistente corporativo da TechFlow Solutions.
-        Responda perguntas de colaboradores baseado APENAS nos documentos fornecidos.
-        Use SOMENTE o contexto fornecido.
-        Se não souber, diga "Não encontrei essa informação".
-        Cite as fontes.
+        
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
+        
+        FORMATO DE RESPOSTA:
+        [Resposta direta e clara]
+        
+        Fonte: [nome do arquivo]
         """
     
     def get_model_name(self) -> str:
@@ -327,6 +372,8 @@ class ClaudeLLM(BaseLLM):
             
             Pergunta do colaborador:
             {query}
+            
+            RESPOSTA:
             """
             
             response = client.messages.create(
@@ -359,14 +406,328 @@ class ClaudeLLM(BaseLLM):
     def _get_default_prompt(self):
         return """
         Você é um assistente corporativo da TechFlow Solutions.
-        Responda perguntas de colaboradores baseado APENAS nos documentos fornecidos.
-        Use SOMENTE o contexto fornecido.
-        Se não souber, diga "Não encontrei essa informação".
-        Cite as fontes.
+        
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
+        
+        FORMATO DE RESPOSTA:
+        [Resposta direta e clara]
+        
+        Fonte: [nome do arquivo]
         """
     
     def get_model_name(self) -> str:
         return f"claude_{self.model_name}"
+
+
+# ==================== OPENROUTER ====================
+
+class OpenRouterLLM(BaseLLM):
+    """LLM via OpenRouter API (suporte a modelos gratuitos)"""
+    
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: str = "nvidia/nemotron-3-super-120b-a12b:free",
+        temperature: float = 0.3,
+        max_tokens: int = 500
+    ):
+        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
+        self.model_name = model_name
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        
+        if not self.api_key:
+            raise ValueError("OPENROUTER_API_KEY não configurada!")
+    
+    def generate_response(self, query: str, context: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+        """Gera resposta usando OpenRouter API"""
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=self.api_key,
+            )
+            
+            if system_prompt is None:
+                system_prompt = self._get_default_prompt()
+            
+            user_prompt = f"""
+            Contexto dos documentos:
+            {context}
+            
+            Pergunta do colaborador:
+            {query}
+            
+            RESPOSTA:
+            """
+            
+            response = client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                extra_headers={
+                    "HTTP-Referer": "https://techflow-solutions.com",
+                    "X-Title": "TechFlow RAG Agent"
+                }
+            )
+            
+            return {
+                "success": True,
+                "response": response.choices[0].message.content,
+                "model": self.model_name,
+                "provider": "openrouter",
+                "tokens_used": response.usage.total_tokens if hasattr(response, 'usage') else 0
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "response": f"❌ Erro OpenRouter: {e}",
+                "model": self.model_name,
+                "provider": "openrouter"
+            }
+    
+    def _get_default_prompt(self):
+        return """
+        Você é um assistente corporativo da TechFlow Solutions.
+        
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
+        
+        FORMATO DE RESPOSTA:
+        [Resposta direta e clara]
+        
+        Fonte: [nome do arquivo]
+        """
+    
+    def get_model_name(self) -> str:
+        return f"openrouter_{self.model_name}"
+
+
+# ==================== GROQ ====================
+
+class GroqLLM(BaseLLM):
+    """LLM via Groq API (inferência ultra-rápida)"""
+    
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: str = "mixtral-8x7b-32768",
+        temperature: float = 0.3,
+        max_tokens: int = 500
+    ):
+        self.api_key = api_key or os.getenv("GROQ_API_KEY")
+        self.model_name = model_name
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        
+        if not self.api_key:
+            raise ValueError("GROQ_API_KEY não configurada!")
+    
+    def generate_response(self, query: str, context: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+        """Gera resposta usando Groq API"""
+        try:
+            from groq import Groq
+            
+            client = Groq(api_key=self.api_key)
+            
+            if system_prompt is None:
+                system_prompt = self._get_default_prompt()
+            
+            user_prompt = f"""
+            Contexto dos documentos:
+            {context}
+            
+            Pergunta do colaborador:
+            {query}
+            
+            RESPOSTA:
+            """
+            
+            response = client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
+            
+            return {
+                "success": True,
+                "response": response.choices[0].message.content,
+                "model": self.model_name,
+                "provider": "groq",
+                "tokens_used": response.usage.total_tokens if hasattr(response, 'usage') else 0
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "response": f"❌ Erro Groq: {e}",
+                "model": self.model_name,
+                "provider": "groq"
+            }
+    
+    def _get_default_prompt(self):
+        return """
+        Você é um assistente corporativo da TechFlow Solutions.
+        
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
+        
+        FORMATO DE RESPOSTA:
+        [Resposta direta e clara]
+        
+        Fonte: [nome do arquivo]
+        """
+    
+    def get_model_name(self) -> str:
+        return f"groq_{self.model_name}"
+
+
+# ==================== DEEPSEEK ====================
+
+class DeepSeekLLM(BaseLLM):
+    """LLM via DeepSeek API"""
+    
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: str = "deepseek-chat",
+        temperature: float = 0.3,
+        max_tokens: int = 500
+    ):
+        self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
+        self.model_name = model_name
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        
+        if not self.api_key:
+            raise ValueError("DEEPSEEK_API_KEY não configurada!")
+    
+    def generate_response(self, query: str, context: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
+        """Gera resposta usando DeepSeek API"""
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(
+                base_url="https://api.deepseek.com/v1",
+                api_key=self.api_key,
+            )
+            
+            if system_prompt is None:
+                system_prompt = self._get_default_prompt()
+            
+            user_prompt = f"""
+            Contexto dos documentos:
+            {context}
+            
+            Pergunta do colaborador:
+            {query}
+            
+            RESPOSTA:
+            """
+            
+            response = client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
+            
+            return {
+                "success": True,
+                "response": response.choices[0].message.content,
+                "model": self.model_name,
+                "provider": "deepseek",
+                "tokens_used": response.usage.total_tokens if hasattr(response, 'usage') else 0
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "response": f"❌ Erro DeepSeek: {e}",
+                "model": self.model_name,
+                "provider": "deepseek"
+            }
+    
+    def _get_default_prompt(self):
+        return """
+        Você é um assistente corporativo da TechFlow Solutions.
+        
+        SUA TAREFA: Responder perguntas com base APENAS no contexto fornecido.
+        
+        ATENÇÃO: O contexto pode conter perguntas e respostas no formato FAQ.
+        Procure por padrões como "P: " e "R: " para encontrar a resposta.
+        Também pode conter informações estruturadas como "FUNDADOR: Alex Tito".
+        
+        REGRAS:
+        1. Leia TODO o contexto com atenção
+        2. Se encontrar "P: [pergunta]" e "R: [resposta]", use a resposta
+        3. Se encontrar informações como "FUNDADOR: Alex Tito", use-as
+        4. Responda de forma clara e direta, citando a fonte
+        5. Se não encontrar, responda "Não encontrei essa informação"
+        6. NÃO invente informações
+        7. Seja objetivo e conciso
+        
+        FORMATO DE RESPOSTA:
+        [Resposta direta e clara]
+        
+        Fonte: [nome do arquivo]
+        """
+    
+    def get_model_name(self) -> str:
+        return f"deepseek_{self.model_name}"
 
 
 # ==================== FACTORY ====================
@@ -384,7 +745,7 @@ class LLMFactory:
         Cria um LLM baseado no provedor
         
         Args:
-            provider: "ollama", "gemini", "openai", "claude"
+            provider: "ollama", "gemini", "openai", "claude", "openrouter", "groq", "deepseek"
             model_name: Nome do modelo (opcional)
             **kwargs: Parâmetros adicionais
             
@@ -400,12 +761,12 @@ class LLMFactory:
             )
         elif provider == "gemini":
             return GeminiLLM(
-                model_name=model_name or "gemini-1.5-flash",
+                model_name=model_name or "gemini-2.5-pro",
                 **kwargs
             )
         elif provider == "openai":
             return OpenAIChat(
-                model_name=model_name or "gpt-3.5-turbo",
+                model_name=model_name or "gpt-4o-mini",
                 **kwargs
             )
         elif provider == "claude":
@@ -413,15 +774,31 @@ class LLMFactory:
                 model_name=model_name or "claude-3-haiku-20240307",
                 **kwargs
             )
+        elif provider == "openrouter":
+            return OpenRouterLLM(
+                model_name=model_name or "nvidia/nemotron-3-super-120b-a12b:free",
+                **kwargs
+            )
+        elif provider == "groq":
+            return GroqLLM(
+                model_name=model_name or "mixtral-8x7b-32768",
+                **kwargs
+            )
+        elif provider == "deepseek":
+            return DeepSeekLLM(
+                model_name=model_name or "deepseek-chat",
+                **kwargs
+            )
         else:
             raise ValueError(f"Provedor não suportado: {provider}")
 
 
-# ==================== RAG AGENT (ATUALIZADO) ====================
+# ==================== RAG AGENT (ATUALIZADO COM HYBRID SEARCH) ====================
 
 class RAGAgent:
     """
     Agente RAG completo: Busca + Geração
+    Suporte a Hybrid Search e Reranker opcional
     """
     
     def __init__(
@@ -430,13 +807,28 @@ class RAGAgent:
         vector_store,
         reranker,
         llm: Optional[BaseLLM] = None,
-        top_k: int = 3
+        top_k: int = 3,
+        use_hybrid: bool = True
     ):
         self.embedder = embedder
         self.vector_store = vector_store
         self.reranker = reranker
         self.llm = llm or OllamaLLM()
         self.top_k = top_k
+        self.use_hybrid = use_hybrid
+        
+        # Inicializa Hybrid Search se necessário
+        if use_hybrid:
+            from src.retrieval.hybrid_search import HybridSearch
+            self.hybrid_search = HybridSearch(
+                vector_store=vector_store,
+                embedder=embedder,
+                chunks_path="./data/processed/chunks.json"
+            )
+            print("✅ Hybrid Search ativado")
+        else:
+            self.hybrid_search = None
+            print("ℹ️ Hybrid Search desativado")
     
     def ask(
         self,
@@ -448,14 +840,42 @@ class RAGAgent:
         query_embedding = self.embedder.embed_text(query)
         
         # 2. Busca documentos
-        search_results = self.vector_store.search_with_rerank(
-            query=query,
-            query_embedding=query_embedding.tolist(),
-            reranker=self.reranker,
-            top_k=self.top_k,
-            initial_k=10,
-            filters=filters
-        )
+        if self.use_hybrid and self.hybrid_search:
+            # Busca híbrida (semântica + palavras-chave)
+            search_results = self.hybrid_search.search(
+                query=query,
+                top_k=self.top_k,
+                alpha=0.5,
+                filters=filters
+            )
+            
+            # Aplica reranking (se disponível)
+            if self.reranker and search_results:
+                search_results = self.reranker.rerank(
+                    query=query,
+                    documents=search_results,
+                    top_k=self.top_k
+                )
+        elif self.reranker:
+            # Busca com reranker (sem hybrid)
+            search_results = self.vector_store.search_with_rerank(
+                query=query,
+                query_embedding=query_embedding.tolist(),
+                reranker=self.reranker,
+                top_k=self.top_k,
+                initial_k=10,
+                filters=filters
+            )
+        else:
+            # Busca semântica pura
+            search_results = self.vector_store.search(
+                query_embedding.tolist(),
+                top_k=self.top_k,
+                filters=filters
+            )
+            for r in search_results:
+                r['score'] = r.get('score', 0)
+                r['metadata'] = r.get('metadata', {})
         
         if not search_results:
             return {
@@ -469,10 +889,13 @@ class RAGAgent:
         context_parts = []
         sources = []
         
-        for i, doc in enumerate(search_results, 1):
-            filename = doc['metadata'].get('filename', 'Documento')
-            category = doc['metadata'].get('category', 'Geral')
-            content = doc['content']
+        for i, doc in enumerate(search_results[:self.top_k], 1):
+            filename = doc.get('metadata', {}).get('filename', 'Documento')
+            category = doc.get('metadata', {}).get('category', 'Geral')
+            content = doc.get('content', '')
+            
+            # Pega o score correto (combined_score ou score)
+            score = doc.get('combined_score', doc.get('score', 0))
             
             context_parts.append(
                 f"[Documento {i}: {filename}]\n"
@@ -483,7 +906,7 @@ class RAGAgent:
             sources.append({
                 "filename": filename,
                 "category": category,
-                "score": doc.get('score', 0),
+                "score": score,
                 "preview": content[:200] + "..."
             })
         
