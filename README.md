@@ -44,40 +44,6 @@ Criar um assistente virtual inteligente que:
 
 ![Arquitetura do Sistema RAG](docs/images/architecture.png)
 
-### Visão Geral
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              USUÁRIO                                       │
-│                                 ↓                                          │
-│                    ┌──────────────────────────┐                            │
-│                    │    Streamlit UI          │                            │
-│                    │  (Interface Web)         │                            │
-│                    └────────────┬─────────────┘                            │
-│                                 ↓                                          │
-│                    ┌──────────────────────────┐                            │
-│                    │   RAGAgent (LangChain)   │                            │
-│                    │  Pipeline RAG Completo   │                            │
-│                    └────────────┬─────────────┘                            │
-│                                 ↓                                          │
-│         ┌───────────────────────┼───────────────────────┐                  │
-│         ↓                       ↓                       ↓                  │
-│  ┌─────────────┐      ┌─────────────────────┐      ┌──────────────┐      │
-│  │  Embedder   │      │    Vector Store     │      │ LLM Universal│      │
-│  │  (Vetores)  │      │   (ChromaDB)        │      │(Ollama/Gemini│      │
-│  │ all-MiniLM  │      │   + Hybrid Search   │      │ /OpenRouter) │      │
-│  └─────────────┘      └─────────────────────┘      └──────────────┘      │
-│         ↓                       ↓                       ↓                  │
-│         └───────────────────────┼───────────────────────┘                  │
-│                                 ↓                                          │
-│                    ┌──────────────────────────┐                            │
-│                    │      DOCUMENTOS          │                            │
-│                    │  20 PDFs em 6 categorias │                            │
-│                    │  RH │ Financeiro │ Legal │                            │
-│                    │  Operacional │ Estrategico│                           │
-│                    └──────────────────────────┘                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
 ## 🛠️ Tecnologias e Ferramentas
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
