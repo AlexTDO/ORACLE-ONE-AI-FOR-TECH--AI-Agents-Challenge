@@ -76,20 +76,34 @@ Criar um assistente virtual inteligente que:
 
 ### Componentes Principais
 
-| Componente | Tecnologia | Função |
-|------------|------------|--------|
-| **Linguagem** | Python 3.10+ | Base do sistema |
-| **Framework Web** | Streamlit | Interface interativa |
-| **Orquestração** | LangChain | Pipeline RAG |
-| **LLM Local** | Ollama + gemma3:1b | Geração de respostas (4GB RAM) |
-| **LLM API** | OpenRouter | Modelos gratuitos de alta qualidade |
-| **Embeddings** | Sentence Transformers (all-MiniLM-L6-v2) | Vetorização de textos |
-| **Banco Vetorial** | ChromaDB | Armazenamento e busca |
-| **Busca Híbrida** | BM25 + Embeddings | Melhor recuperação |
-| **Reranking** | Cross-Encoder (ms-marco-MiniLM-L-6-v2) | Refinamento de resultados |
-| **Processamento** | pdfplumber | Extração robusta de PDFs |
+## 🛠️ Tecnologias e Ferramentas
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white)
+![OpenRouter](https://img.shields.io/badge/OpenRouter-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-4A4A4A?style=for-the-badge&logo=chromadb&logoColor=white)
+![Sentence Transformers](https://img.shields.io/badge/Sentence_Transformers-FF6F00?style=for-the-badge&logo=huggingface&logoColor=white)
+![PDFPlumber](https://img.shields.io/badge/PDFPlumber-FF6B6B?style=for-the-badge&logo=adobe&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ---
+
+📋 Componentes Principais (Tabela Visual)
+Componente	Tecnologia	Função
+🐍 Linguagem	Python 3.10+	Base do sistema
+🖥️ Framework Web	Streamlit	Interface interativa
+🔗 Orquestração	LangChain	Pipeline RAG
+🦙 LLM Local	Ollama + gemma3:1b	Geração de respostas (4GB RAM)
+🌐 LLM API	OpenRouter	Modelos gratuitos de alta qualidade
+📊 Embeddings	Sentence Transformers (all-MiniLM-L6-v2)	Vetorização de textos
+🗄️ Banco Vetorial	ChromaDB	Armazenamento e busca
+🔍 Busca Híbrida	BM25 + Embeddings	Melhor recuperação
+🎯 Reranking	Cross-Encoder (ms-marco-MiniLM-L-6-v2)	Refinamento de resultados
+📄 Processamento	pdfplumber	Extração robusta de PDFs
 
 ## 📁 Estrutura do Projeto
 
