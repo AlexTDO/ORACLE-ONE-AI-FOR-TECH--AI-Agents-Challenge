@@ -5,6 +5,7 @@ Suporte universal para múltiplos LLMs (Ollama, Gemini, OpenAI, Claude, OpenRout
 
 import sys
 import os
+import time  # <--- ADICIONADO PARA CORRIGIR O ERRO REMOVECHILD
 from pathlib import Path
 
 # Adiciona src ao path
@@ -337,6 +338,7 @@ with st.sidebar:
     
     if st.button("🔄 Resetar Conversa", use_container_width=True):
         st.session_state.messages = []
+        time.sleep(0.1) # <--- ADICIONADO PARA EVITAR O ERRO DO NAVEGADOR
         st.rerun()
     
     st.markdown("---")
@@ -400,6 +402,7 @@ if 'agent' not in st.session_state:
             top_k=top_k
         )
 
+# Atualiza o agente se provedor ou modelo mudarem (sem executar st.rerun() para evitar conflito)
 if st.session_state.get('last_provider') != provider or \
    st.session_state.get('last_model') != model_name:
     
@@ -414,7 +417,7 @@ if st.session_state.get('last_provider') != provider or \
             top_k=top_k
         )
         st.session_state.messages = []
-        st.rerun()
+        # O rerun foi removido daqui, o Streamlit fará a atualização no próximo ciclo
 
 if 'agent' in st.session_state:
     st.session_state.agent.top_k = top_k
