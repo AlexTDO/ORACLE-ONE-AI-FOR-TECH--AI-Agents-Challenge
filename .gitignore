@@ -30,6 +30,7 @@ data/raw/
 # CACHE DE EMBEDDINGS
 # ============================================
 data/processed/embeddings_cache/
+data/processed/*.cache
 *.cache
 *.h5
 *.pb
@@ -94,11 +95,16 @@ ollama_models/
 *.orig
 *.rej
 
+# ============================================
+# ARQUIVOS JSON (BLOQUEIA TODOS, COM EXCEÇÕES)
+# ============================================
+*.json
+!data/processed/chunks.json   # ← PERMITE O CHUNKS.JSON
+!requirements.json            # ← PERMITE (se existir)
+!.env.example                 # ← PERMITE (se existir)
 
 # ============================================
-# RELATÓRIOS E ARQUIVOS GRANDES
+# ARQUIVOS DE RELATÓRIO
 # ============================================
 *.html
 *.xml
-*.json
-!requirements.json
