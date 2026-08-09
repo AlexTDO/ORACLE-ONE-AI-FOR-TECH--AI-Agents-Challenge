@@ -352,13 +352,14 @@ def init_components(provider, model_name, temperature, top_k):
         from dotenv import load_dotenv
         load_dotenv()
         
-        # ===== DOWNLOAD DO MODELO DE EMBEDDING (SEGURA E CORRETO) =====
-        # Realiza o download do modelo dentro do cache do Streamlit, 
-        # garantindo que ele não seja interrompido por timeout.
+        # ===== CARREGAMENTO DO MODELO DE EMBEDDING (A PARTIR DE PASTA LOCAL) =====
+        # Isso evita que a nuvem precise baixar o modelo da internet, eliminando timeouts.
         from sentence_transformers import SentenceTransformer
         if 'embedding_model' not in st.session_state:
-            with st.spinner("⬇️ Baixando modelo de embeddings (pode levar 2 min)..."):
-                st.session_state.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            model_path = os.path.join(os.getcwd(), 'models', 'all-MiniLM-L6-v2')
+            with st.spinner("📦 Carregando modelo de embeddings..."):
+                # Carrega o modelo a partir da pasta que enviamos no repositório
+                st.session_state.embedding_model = SentenceTransformer(model_path)
         embedder = Embedder()
         # ==================================================================
         
