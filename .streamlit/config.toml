@@ -1,0 +1,23 @@
+# =========================================================
+# CONFIGURAÇÕES DO STREAMLIT (APENAS PARA AMBIENTE DE NUVEM)
+# =========================================================
+
+[server]
+# Aumenta o limite de upload de arquivos para 200MB.
+# Isso não serve para uploads do usuário, mas ajuda a evitar que
+# o servidor da Streamlit Cloud feche a conexão muito cedo ao 
+# baixar modelos pesados (como o sentence-transformers).
+maxUploadSize = 200
+
+[theme]
+# Define a cor primária do tema para o azul corporativo da TechFlow.
+# Isso deixa a interface visualmente mais bonita e padronizada.
+primaryColor = "#0A2463"
+
+[browser]
+# Desativa a coleta de estatísticas anônimas de uso.
+# Isso reduz um pouquinho o processamento desnecessário na nuvem 
+# e respeita a privacidade dos usuários.
+gatherUsageStats = false
+
+
