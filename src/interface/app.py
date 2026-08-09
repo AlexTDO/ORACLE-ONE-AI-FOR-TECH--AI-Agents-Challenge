@@ -5,7 +5,7 @@ Suporte universal para múltiplos LLMs (Ollama, Gemini, OpenAI, Claude, OpenRout
 
 import sys
 import os
-import time  # <--- ADICIONADO PARA CORRIGIR O ERRO REMOVECHILD
+import time
 from pathlib import Path
 
 # Adiciona src ao path
@@ -338,7 +338,7 @@ with st.sidebar:
     
     if st.button("🔄 Resetar Conversa", use_container_width=True):
         st.session_state.messages = []
-        time.sleep(0.1) # <--- ADICIONADO PARA EVITAR O ERRO DO NAVEGADOR
+        time.sleep(0.1)
         st.rerun()
     
     st.markdown("---")
@@ -346,7 +346,7 @@ with st.sidebar:
 
 # ==================== INICIALIZAÇÃO ====================
 
-@st.cache_resource
+@st.cache_resource(ttl=3600)  # <--- ADICIONADO TTL PARA LIMPAR CACHE NA NUVEM
 def init_components(provider, model_name, temperature, top_k):
     """Inicializa os componentes do RAG com o provedor e modelo selecionados"""
     try:
@@ -402,23 +402,20 @@ if 'agent' not in st.session_state:
             top_k=top_k
         )
 
-# Atualiza o agente se provedor ou modelo mudarem (sem executar st.rerun() para evitar conflito)
+# ==================== GERENCIAMENTO DE TROCA DE MODELO ====================
+# Não usamos st.rerun() aqui. A troca de modelo será aplicada na próxima pergunta
 if st.session_state.get('last_provider') != provider or \
    st.session_state.get('last_model') != model_name:
     
     st.session_state.last_provider = provider
     st.session_state.last_model = model_name
+    st.session_state.messages = [] # Limpa o chat visualmente
     
-    with st.spinner("🔄 Trocando modelo..."):
-        st.session_state.agent = init_components(
-            provider=provider,
-            model_name=model_name,
-            temperature=temperature,
-            top_k=top_k
-        )
-        st.session_state.messages = []
-        # O rerun foi removido daqui, o Streamlit fará a atualização no próximo ciclo
+    # Apenas invalidamos o cache antigo. O Streamlit vai recriar no próximo uso.
+    if 'agent' in st.session_state:
+        del st.session_state.agent 
 
+# Aplica configurações ao agente existente (se disponível)
 if 'agent' in st.session_state:
     st.session_state.agent.top_k = top_k
     if hasattr(st.session_state.agent, 'llm'):
@@ -501,6 +498,16 @@ if prompt := st.chat_input("Digite sua pergunta..."):
     with st.chat_message("assistant"):
         with st.spinner("🔍 Consultando documentos..."):
             try:
+                # Verifica se o agente foi deletado (troca de modelo) e recria sob demanda
+                if 'agent' not in st.session_state:
+                    with st.spinner("🔄 Aplicando novo modelo..."):
+                        st.session_state.agent = init_components(
+                            provider=provider,
+                            model_name=model_name,
+                            temperature=temperature,
+                            top_k=top_k
+                        )
+                
                 filters = None
                 if selected_category != "Todas":
                     filters = {"category": selected_category}
