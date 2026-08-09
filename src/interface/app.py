@@ -352,17 +352,9 @@ def init_components(provider, model_name, temperature, top_k):
         from dotenv import load_dotenv
         load_dotenv()
         
-        # ===== CARREGAMENTO DO MODELO DE EMBEDDING (A PARTIR DE PASTA LOCAL) =====
-        # Isso evita que a nuvem precise baixar o modelo da internet, eliminando timeouts.
-        from sentence_transformers import SentenceTransformer
-        if 'embedding_model' not in st.session_state:
-            model_path = os.path.join(os.getcwd(), 'models', 'all-MiniLM-L6-v2')
-            with st.spinner("📦 Carregando modelo de embeddings..."):
-                # Carrega o modelo a partir da pasta que enviamos no repositório
-                st.session_state.embedding_model = SentenceTransformer(model_path)
-        
-        # 🔧 CORREÇÃO: Passa o modelo carregado explicitamente para o Embedder
-        embedder = Embedder(model=st.session_state.embedding_model)
+        # ===== EMBEDDING PADRÃO (SEM PRÉ-CARGA, SEM PASTA LOCAL) =====
+        # Cria o embedder com o modelo padrão. A biblioteca baixa da internet na primeira vez.
+        embedder = Embedder(model_name='all-MiniLM-L6-v2')
         # ==================================================================
         
         vector_store = VectorStore()
