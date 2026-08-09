@@ -347,30 +347,98 @@ with st.sidebar:
 
 @st.cache_resource(ttl=3600)
 def init_components(provider, model_name, temperature, top_k):
-    """Inicializa os componentes do RAG com o provedor e modelo selecionados"""
+    """Inicializa os componentes do RAG com diagnóstico detalhado.
+
+    Esta versão identifica exatamente qual componente falha durante o
+    deploy no Streamlit Cloud.
+    """
+    from dotenv import load_dotenv
+
+    # Carrega variáveis de ambiente (.env local ou Secrets do Streamlit)
+    load_dotenv()
+
+    # ============================================================
+    # 1. EMBEDDING
+    # ============================================================
     try:
-        from dotenv import load_dotenv
-        load_dotenv()
-        
-        # ===== EMBEDDING PADRÃO (SEM PRÉ-CARGA, SEM PASTA LOCAL) =====
-        # Cria o embedder com o modelo padrão. A biblioteca baixa da internet na primeira vez.
-        embedder = Embedder(model_name='all-MiniLM-L6-v2')
-        # ==================================================================
-        
+        st.write("🔹 Inicializando Embedder...")
+        embedder = Embedder(model_name="all-MiniLM-L6-v2")
+        st.success("✅ Embedder inicializado com sucesso")
+
+    except Exception as e:
+        st.error(
+            f"❌ ERRO NO EMBEDDER\\n\\n"
+            f"**Tipo:** `{type(e).__name__}`\\n\\n"
+            f"**Detalhes:** `{e}`"
+        )
+        raise
+
+    # ============================================================
+    # 2. VECTOR STORE
+    # ============================================================
+    try:
+        st.write("🔹 Inicializando VectorStore...")
         vector_store = VectorStore()
+        st.success("✅ VectorStore inicializado com sucesso")
+
+    except Exception as e:
+        st.error(
+            f"❌ ERRO NO VECTOR STORE\\n\\n"
+            f"**Tipo:** `{type(e).__name__}`\\n\\n"
+            f"**Detalhes:** `{e}`"
+        )
+        raise
+
+    # ============================================================
+    # 3. RERANKER
+    # ============================================================
+    try:
+        st.write("🔹 Inicializando Reranker...")
         reranker = Reranker()
-        
-        try:
-            llm = LLMFactory.create(
-                provider=provider,
-                model_name=model_name,
-                temperature=temperature,
-                max_tokens=800
-            )
-        except ValueError as e:
-            st.error(f"❌ Erro ao criar LLM: {e}")
-            st.stop()
-        
+        st.success("✅ Reranker inicializado com sucesso")
+
+    except Exception as e:
+        st.error(
+            f"❌ ERRO NO RERANKER\\n\\n"
+            f"**Tipo:** `{type(e).__name__}`\\n\\n"
+            f"**Detalhes:** `{e}`"
+        )
+        raise
+
+    # ============================================================
+    # 4. LLM
+    # ============================================================
+    try:
+        st.write(
+            f"🔹 Inicializando LLM: "
+            f"`{provider}` / `{model_name}`..."
+        )
+
+        llm = LLMFactory.create(
+            provider=provider,
+            model_name=model_name,
+            temperature=temperature,
+            max_tokens=800
+        )
+
+        st.success(
+            f"✅ LLM inicializado: `{provider}` / `{model_name}`"
+        )
+
+    except Exception as e:
+        st.error(
+            f"❌ ERRO NO LLM\\n\\n"
+            f"**Tipo:** `{type(e).__name__}`\\n\\n"
+            f"**Detalhes:** `{e}`"
+        )
+        raise
+
+    # ============================================================
+    # 5. RAG AGENT
+    # ============================================================
+    try:
+        st.write("🔹 Criando RAGAgent...")
+
         agent = RAGAgent(
             embedder=embedder,
             vector_store=vector_store,
@@ -378,17 +446,53 @@ def init_components(provider, model_name, temperature, top_k):
             llm=llm,
             top_k=top_k
         )
-        
-        stats = vector_store.get_stats()
-        st.session_state.doc_count = stats['document_count']
-        st.session_state.current_model = model_name
-        st.session_state.current_provider = provider
-        
-        return agent
-        
+
+        st.success("✅ RAGAgent criado com sucesso")
+
     except Exception as e:
-        st.error(f"❌ Erro ao inicializar: {e}")
-        st.stop()
+        st.error(
+            f"❌ ERRO NO RAG AGENT\\n\\n"
+            f"**Tipo:** `{type(e).__name__}`\\n\\n"
+            f"**Detalhes:** `{e}`"
+        )
+        raise
+
+    # ============================================================
+    # 6. ESTATÍSTICAS DO VECTOR STORE
+    # ============================================================
+    try:
+        st.write("🔹 Obtendo estatísticas do VectorStore...")
+
+        stats = vector_store.get_stats()
+
+        st.write("📊 Estatísticas retornadas:", stats)
+
+        # Evita KeyError caso document_count não exista
+        document_count = stats.get("document_count", 0)
+
+        st.session_state.doc_count = document_count
+
+        st.success(
+            f"✅ Estatísticas OK — {document_count} documentos/chunks"
+        )
+
+    except Exception as e:
+        st.error(
+            f"❌ ERRO NO GET_STATS\\n\\n"
+            f"**Tipo:** `{type(e).__name__}`\\n\\n"
+            f"**Detalhes:** `{e}`"
+        )
+        raise
+
+    # ============================================================
+    # 7. ESTADO DA APLICAÇÃO
+    # ============================================================
+    st.session_state.current_model = model_name
+    st.session_state.current_provider = provider
+
+    st.success("🎉 AGENTE INICIALIZADO COM SUCESSO!")
+
+    return agent
 
 
 # ==================== ESTADO DA SESSÃO ====================
