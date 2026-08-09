@@ -581,6 +581,7 @@ MIT
 - **GitHub:** [AlexTDO](https://github.com/AlexTDO)
 - **Projeto:** [ORACLE-ONE-AI-FOR-TECH--AI-Agents-Challenge](https://github.com/AlexTDO/ORACLE-ONE-AI-FOR-TECH--AI-Agents-Challenge)
 - **App no ar:** [Streamlit Cloud](https://oracle-one-ai-for-tech--ai-agents-challenge.streamlit.app)
+ **Linkedlin:**[AlexTito](https://www.linkedin.com/in/alex-tito-779ab511a/)
 
 ---
 
