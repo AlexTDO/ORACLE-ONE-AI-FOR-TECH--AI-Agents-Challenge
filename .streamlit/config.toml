@@ -9,6 +9,12 @@
 # baixar modelos pesados (como o sentence-transformers).
 maxUploadSize = 200
 
+# Desabilita proteções CORS e XSRF no ambiente local/cloud.
+# Isso resolve o erro "removeChild" em navegadores Windows, 
+# pois impede que o Streamlit force a recriação agressiva do DOM.
+enableCORS = false
+enableXsrfProtection = false
+
 [theme]
 # Define a cor primária do tema para o azul corporativo da TechFlow.
 # Isso deixa a interface visualmente mais bonita e padronizada.
@@ -19,5 +25,4 @@ primaryColor = "#0A2463"
 # Isso reduz um pouquinho o processamento desnecessário na nuvem 
 # e respeita a privacidade dos usuários.
 gatherUsageStats = false
-
 

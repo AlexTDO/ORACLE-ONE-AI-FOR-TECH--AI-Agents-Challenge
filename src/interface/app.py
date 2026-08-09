@@ -18,6 +18,23 @@ from src.retrieval.vector_store import VectorStore
 from src.retrieval.reranker import Reranker
 from src.generation.llm import LLMFactory, RAGAgent
 
+# ==================== PRÉ-CARGA DO MODELO DE EMBEDDING ====================
+# Esse bloco roda antes de qualquer coisa para baixar o modelo pesado na nuvem
+# sem ser interrompido pelo timeout de execução do Streamlit.
+import time
+from sentence_transformers import SentenceTransformer
+
+try:
+    with st.spinner("🔄 Baixando modelo de embedding (pode demorar 2 minutos)..."):
+        # O Streamlit Cloud faz cache automático da pasta '~/.cache/huggingface'
+        # Então esse download só vai acontecer na PRIMEIRA execução.
+        _ = SentenceTransformer('all-MiniLM-L6-v2')
+        print("✅ Modelo de embedding carregado com sucesso!")
+except Exception as e:
+    st.error(f"Erro crítico ao baixar o modelo: {e}")
+    st.stop()
+# =========================================================================
+
 
 # ==================== CONFIGURAÇÃO DA PÁGINA ====================
 st.set_page_config(
@@ -232,7 +249,7 @@ with st.sidebar:
         "openai": "gpt-3.5-turbo",
         "claude": "claude-3-haiku-20240307",
         "openrouter": "nvidia/nemotron-3-super-120b-a12b:free",
-        "groq": "mixtral-8x7b-32768",
+        "groq": "llama-3.3-70b-versatile",   # <--- ATUALIZADO
         "deepseek": "deepseek-chat"
     }
     
@@ -245,8 +262,8 @@ with st.sidebar:
             "mistralai/mistral-7b-instruct:free"
         ],
         "groq": [
-            "mixtral-8x7b-32768",
-            "llama3-70b-8192",
+            "llama-3.3-70b-versatile",    # <--- NOVO (Recomendado)
+            "llama-3.1-70b-versatile",    # <--- NOVO
             "llama3-8b-8192",
             "gemma2-9b-it"
         ],
@@ -346,7 +363,7 @@ with st.sidebar:
 
 # ==================== INICIALIZAÇÃO ====================
 
-@st.cache_resource(ttl=3600)  # <--- ADICIONADO TTL PARA LIMPAR CACHE NA NUVEM
+@st.cache_resource(ttl=3600)
 def init_components(provider, model_name, temperature, top_k):
     """Inicializa os componentes do RAG com o provedor e modelo selecionados"""
     try:
@@ -459,8 +476,8 @@ if not st.session_state.messages:
         
         Digite sua pergunta abaixo! 👇
         """.format(
-            st.session_state.get('current_model', 'gemma3:1b'),
-            st.session_state.get('current_provider', 'ollama')
+            st.session_state.get('current_model', 'llama-3.3-70b-versatile'),  # Atualizado visualmente para o novo padrão
+            st.session_state.get('current_provider', 'groq')
         ))
 
 # Histórico
