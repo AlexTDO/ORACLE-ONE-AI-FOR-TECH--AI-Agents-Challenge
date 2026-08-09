@@ -44,7 +44,7 @@ openai==1.54.0
 anthropic==0.42.0
 
 # Groq (inferência ultra-rápida)
-groq==1.12.0
+groq==1.6.0
 
 # ============================================================
 # FRAMEWORK - INTERFACE
